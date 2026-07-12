@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- グリーンボタン 中継ページ v1.0.0 (評価期間・使い捨て)
+     ?k=<統合番地> を受け取り、
+       ① 地図GAS(一点表示.gs exec)を ?k= 付きで iframe 全画面表示
+       ② 下部の緑ボタンで Forms プレフィル(GB,{版},{統合番地})へ target=_top 遷移
+     名簿は持たない。統合番地を右から左へ受け渡すだけの純URL変換器。 -->
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>番地確認</title>
+<style>
+  html,body{margin:0;padding:0;height:100%}
+  body{display:flex;flex-direction:column;height:100vh;height:100dvh;
+       font-family:sans-serif;overflow:hidden;background:#fff}
+  #map{flex:1 1 auto;border:0;width:100%;min-height:200px}
+  #bar{flex:0 0 auto}
+  #go{display:block;width:100%;box-sizing:border-box;border:0;
+      background:#1a9e3f;color:#fff;font:900 22px/1.2 sans-serif;
+      padding:18px 12px;text-align:center;cursor:pointer}
+  #go:active{background:#157a31}
+  #err{padding:1.5em;font-size:18px;line-height:1.6}
+</style>
+</head>
+<body>
+<script>
+/* ==== 設定（この3つだけがサイト固有。差し替えはここ） ==== */
+var GAS_EXEC = 'https://script.google.com/macros/s/AKfycbyXaFkXkU2OZUFOthjelsiS6Qw-KYXRQa7gdgI_nUsxIFTyVyNsmevTgQ6BuWpDWmJ9/exec';
+var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLScYjoeS19iGS42yKi5R5XZA1UE00eQCvWQtVIfodmOmbnFtGQ/viewform';
+var FORM_ENTRY = '653868919';
+var PAYLOAD_VER = '2026-06';   /* QRスキーム互換識別子。暦月ではない。 */
+/* ======================================================= */
+
+/* ?k=統合番地 を取得。無ければ ?b= も一応拾う（旧QR救済） */
+var params = new URLSearchParams(location.search);
+var k = (params.get('k') || '').trim();
+var b = (params.get('b') || '').trim();
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+if (!k && !b){
+  document.write('<div id="err"><b>番地が指定されていません。</b><br>QRコードから開いてください。</div>');
+} else {
+  /* ① 地図GAS を iframe で。?k= をそのまま渡す（分解はGAS側の仕事） */
+  var mapUrl = GAS_EXEC + '?' + (k ? ('k=' + encodeURIComponent(k)) : ('b=' + encodeURIComponent(b)));
+  /* ② Forms プレフィルURL。ペイロード = GB,{版},{統合番地} */
+  var payload = 'GB,' + PAYLOAD_VER + ',' + (k || b);
+  var formUrl = FORM_BASE + '?usp=pp_url&entry.' + FORM_ENTRY + '=' + encodeURIComponent(payload);
+
+  document.write(
+    '<iframe id="map" src="' + esc(mapUrl) + '"></iframe>' +
+    '<div id="bar"><a id="go" href="' + esc(formUrl) + '" target="_top">' +
+    'この場所で登録に進む ▶</a></div>'
+  );
+}
+</script>
+</body>
+</html>
