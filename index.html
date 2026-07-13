@@ -1,37 +1,62 @@
 <!doctype html>
-<!-- グリーンボタン 中継ページ v1.0.0 (評価期間・使い捨て)
-     ?k=<統合番地> を受け取り、
-       ① 地図GAS(一点表示.gs exec)を ?k= 付きで iframe 全画面表示
-       ② 下部の緑ボタンで Forms プレフィル(GB,{版},{統合番地})へ target=_top 遷移
-     名簿は持たない。統合番地を右から左へ受け渡すだけの純URL変換器。 -->
+<!-- グリーンボタン 中継ページ v2.0.0 (評価期間・使い捨て)
+     v2.0.0 変更（index.html層のみ。iframe内=一点表示.gs は未変更）:
+       ・地図を全面ベタ→「額縁」化（周囲に余白＋枠線＋角丸）。
+         全面地図が『操作する地図アプリ』と誤解させ、下の登録ボタンに気づかせない問題への対処。
+         囲まれた一枚の絵に見せることで『これは最終確認、操作対象ではない』を余白で語る。
+       ・登録ボタンを下部固定・全幅・影付きの明示ボタンに（航空写真ボタンと釣り合う『押せる』見た目）。
+         どの端末でもスクロール不要で常時可視（従来は縦の短い端末で画面外に隠れていた）。
+     ?k=<統合番地> を受け、①地図GAS(exec)を ?k= 付きで iframe 表示 ②Formsプレフィルへ target=_top 遷移。
+     名簿は持たない純URL変換器。 -->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>番地確認</title>
 <style>
+  :root{
+    --pad: 14px;
+    --frame: #cfcfcf;
+    --bg:    #eef1f4;
+    --go:    #1a9e3f;
+    --go2:   #157a31;
+  }
   html,body{margin:0;padding:0;height:100%}
   body{display:flex;flex-direction:column;height:100vh;height:100dvh;
-       font-family:sans-serif;overflow:hidden;background:#fff}
-  #map{flex:1 1 auto;border:0;width:100%;min-height:200px}
-  #bar{flex:0 0 auto}
-  #go{display:block;width:100%;box-sizing:border-box;border:0;
-      background:#1a9e3f;color:#fff;font:900 22px/1.2 sans-serif;
-      padding:18px 12px;text-align:center;cursor:pointer}
-  #go:active{background:#157a31}
+       font-family:sans-serif;overflow:hidden;background:var(--bg)}
+
+  #frame{flex:1 1 auto;min-height:120px;
+         margin:var(--pad) var(--pad) 8px var(--pad);
+         border:1px solid var(--frame);border-radius:12px;
+         background:#fff;overflow:hidden;position:relative;
+         box-shadow:0 1px 4px rgba(0,0,0,.12)}
+  #map{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+
+  #hint{flex:0 0 auto;text-align:center;color:#555;font-size:13px;
+        padding:0 var(--pad) 8px var(--pad);line-height:1.3}
+
+  #bar{flex:0 0 auto;padding:0 var(--pad)
+       calc(var(--pad) + env(safe-area-inset-bottom, 0px)) var(--pad)}
+  #go{display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;box-sizing:border-box;border:0;border-radius:12px;
+      background:var(--go);color:#fff;font:900 21px/1.2 sans-serif;
+      padding:18px 12px;text-decoration:none;text-align:center;
+      box-shadow:0 3px 8px rgba(0,0,0,.22);cursor:pointer}
+  #go:active{background:var(--go2);box-shadow:0 1px 3px rgba(0,0,0,.22)}
+  #go .arw{font-size:18px}
+
   #err{padding:1.5em;font-size:18px;line-height:1.6}
 </style>
 </head>
 <body>
 <script>
-/* ==== 設定（この3つだけがサイト固有。差し替えはここ） ==== */
-var GAS_EXEC = 'https://script.google.com/macros/s/AKfycbyXaFkXkU2OZUFOthjelsiS6Qw-KYXRQa7gdgI_nUsxIFTyVyNsmevTgQ6BuWpDWmJ9/exec';
-var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLScYjoeS19iGS42yKi5R5XZA1UE00eQCvWQtVIfodmOmbnFtGQ/viewform';
+/* ==== サイト固有の設定（差し替えはここだけ） ==== */
+var GAS_EXEC   = 'https://script.google.com/macros/s/AKfycbyXaFkXkU2OZUFOthjelsiS6Qw-KYXRQa7gdgI_nUsxIFTyVyNsmevTgQ6BuWpDWmJ9/exec';
+var FORM_BASE  = 'https://docs.google.com/forms/d/e/1FAIpQLScYjoeS19iGS42yKi5R5XZA1UE00eQCvWQtVIfodmOmbnFtGQ/viewform';
 var FORM_ENTRY = '653868919';
-var PAYLOAD_VER = '2026-06';   /* QRスキーム互換識別子。暦月ではない。 */
-/* ======================================================= */
+var PAYLOAD_VER = '2026-06';
+/* ============================================= */
 
-/* ?k=統合番地 を取得。無ければ ?b= も一応拾う（旧QR救済） */
 var params = new URLSearchParams(location.search);
 var k = (params.get('k') || '').trim();
 var b = (params.get('b') || '').trim();
@@ -41,16 +66,15 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 if (!k && !b){
   document.write('<div id="err"><b>番地が指定されていません。</b><br>QRコードから開いてください。</div>');
 } else {
-  /* ① 地図GAS を iframe で。?k= をそのまま渡す（分解はGAS側の仕事） */
-  var mapUrl = GAS_EXEC + '?' + (k ? ('k=' + encodeURIComponent(k)) : ('b=' + encodeURIComponent(b)));
-  /* ② Forms プレフィルURL。ペイロード = GB,{版},{統合番地} */
+  var mapUrl  = GAS_EXEC + '?' + (k ? ('k=' + encodeURIComponent(k)) : ('b=' + encodeURIComponent(b)));
   var payload = 'GB,' + PAYLOAD_VER + ',' + (k || b);
   var formUrl = FORM_BASE + '?usp=pp_url&entry.' + FORM_ENTRY + '=' + encodeURIComponent(payload);
 
   document.write(
-    '<iframe id="map" src="' + esc(mapUrl) + '"></iframe>' +
+    '<div id="frame"><iframe id="map" src="' + esc(mapUrl) + '"></iframe></div>' +
+    '<div id="hint">場所を確かめたら、下のボタンで登録に進みます</div>' +
     '<div id="bar"><a id="go" href="' + esc(formUrl) + '" target="_top">' +
-    'この場所で登録に進む ▶</a></div>'
+    '<span>この場所で登録に進む</span><span class="arw">&#9654;</span></a></div>'
   );
 }
 </script>
