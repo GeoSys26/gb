@@ -1,16 +1,17 @@
 <!doctype html>
-<!-- グリーンボタン 中継ページ v2.2.1 (評価期間・使い捨て)
+<!-- グリーンボタン 中継ページ v2.3.0 (評価期間・使い捨て)
      v2.1.0 変更（index.html層のみ。iframe内=一点表示.gs は未変更）:
        ・登録ボタンを全幅バー→「文字幅＋少し」の中央ボタンに。
          全幅だと上の緑ヘッダ（全幅バー）と同じ形に見え、同種のバーと誤認され押せると気づかれない。
          航空写真ボタン（文字幅の角丸）と同じ語彙にして『押すもの』と直感させる。
        ・ボタンを一段大きく・影を強めて、地図（額縁の中）の外にある主アクションだと際立たせる。
        ・送信ボタンを発光緑#39ff14＋黒文字に統一（緑帯と同色）。『送信＝この色』の信号を一本化。
-     v2.2.1: v2.2.0の60vh固定は縦長画面で地図の下に巨大な空白を生み、ボタンが遠く離れた（間延び）。
-       vh固定をやめ、flex比率で縦を積む方式に是正。地図=flex:1（主役・残りを取る）、掴み代=固定の中立帯、
-       ボタン=自身の高さ。縦長でも縦短でも破綻せず、スマホでは掴み代とボタンが常時画面内に残る。
-     v2.2.0: スマホで地図がスクロールを奪い送信ボタンに届かない件への最初の対処（60vh固定）。→2.2.1で是正。
-       ・左右余白 14→20px（枠の脇に指の逃げ場）。掴み代（中立のスクロール帯）を地図とボタンの間に確保。
+     v2.3.0: 当初要求（地図の横に、何も表示しない下地帯を作り、そこを指で掴んでページを動かす）に忠実に是正。
+       ・地図の右に固定幅の下地帯（#gutter・地図でもボタンでもない余白）を縦に走らせる。
+         ここに指を置けばページがスクロールでき、地図にスクロールを奪われない。地図の高さは触らない。
+       ・地図＝額縁の中の主役、その右に下地帯。まずは右に実装（左右どちらが良いかは後で調整）。
+     v2.2.x（撤回）: 地図の高さを制限して『下』に掴み代を作る方式は、当初要求（横の下地）のすり替えだった。
+       高さ操作はやめ、横方向の下地で解決する方針に戻す。
      v2.0.0: 地図を額縁化（周囲余白＋枠線＋角丸）。ボタン下部固定で常時可視。
      ?k=<統合番地> を受け、①地図GAS(exec)を ?k= 付きで iframe 表示 ②Formsプレフィルへ target=_top 遷移。
      名簿は持たない純URL変換器。 -->
@@ -21,7 +22,8 @@
 <title>番地確認</title>
 <style>
   :root{
-    --pad: 20px;   /* 左右上の余白。枠の脇に指の逃げ場を作る */
+    --pad: 20px;   /* 額縁の外側余白 */
+    --gutter: 64px; /* 地図の右の下地帯の幅。指でページを掴む余白 */
     --frame: #cfcfcf;
     --bg:    #eef1f4;
     --go:    #39ff14;   /* 発光緑：緑帯(#39ff14)と統一し『送信＝この色』の信号を一本化 */
@@ -31,14 +33,17 @@
   body{display:flex;flex-direction:column;height:100vh;height:100dvh;
        font-family:sans-serif;overflow:hidden;background:var(--bg)}
 
-  /* 地図＝額縁の中の一枚の絵。flex:1で残りの縦を取る主役。掴み代とボタンは自分の高さぶんだけ下に残る。
-     vh固定をやめflex比率で積むことで、縦長・縦短どちらの画面でも間延び/窮屈にならない。 */
-  #frame{flex:1 1 auto;min-height:180px;
+  /* 額縁：中を横並びにして [地図 | 右の下地帯] を収める。flex:1で残りの縦を取る主役。 */
+  #frame{flex:1 1 auto;min-height:180px;display:flex;flex-direction:row;
          margin:var(--pad) var(--pad) 0 var(--pad);
          border:1px solid var(--frame);border-radius:12px;
          background:#fff;overflow:hidden;position:relative;
          box-shadow:0 1px 4px rgba(0,0,0,.12)}
+  #mapwrap{flex:1 1 auto;position:relative;min-width:0}
   #map{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  /* 下地帯＝地図の右。何も表示しない余白。ここを指で掴めばページが動く（地図に奪われない）。 */
+  #gutter{flex:0 0 var(--gutter);background:var(--bg);
+          touch-action:pan-y;align-self:stretch}
 
   /* 掴み代＝地図とボタンの間の中立帯。余りは吸わず（flex:0）、指1本分の固定高だけ持つ。
      地図でもボタンでもないので、ここに指を置けばページが動き、地図にスクロールを奪われない。 */
@@ -83,7 +88,7 @@ if (!k && !b){
   var formUrl = FORM_BASE + '?usp=pp_url&entry.' + FORM_ENTRY + '=' + encodeURIComponent(payload);
 
   document.write(
-    '<div id="frame"><iframe id="map" src="' + esc(mapUrl) + '"></iframe></div>' +
+    '<div id="frame"><div id="mapwrap"><iframe id="map" src="' + esc(mapUrl) + '"></iframe></div><div id="gutter"></div></div>' +
     '<div id="hint">場所を確かめたら、下のボタンで登録に進みます</div>' +
     '<div id="bar"><a id="go" href="' + esc(formUrl) + '" target="_top">' +
     '<span>この場所で登録に進む</span><span class="arw">&#9654;</span></a></div>'
