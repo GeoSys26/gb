@@ -1,11 +1,17 @@
 <!doctype html>
-<!-- グリーンボタン 中継ページ v2.1.0 (評価期間・使い捨て)
+<!-- グリーンボタン 中継ページ v2.2.0 (評価期間・使い捨て)
      v2.1.0 変更（index.html層のみ。iframe内=一点表示.gs は未変更）:
        ・登録ボタンを全幅バー→「文字幅＋少し」の中央ボタンに。
          全幅だと上の緑ヘッダ（全幅バー）と同じ形に見え、同種のバーと誤認され押せると気づかれない。
          航空写真ボタン（文字幅の角丸）と同じ語彙にして『押すもの』と直感させる。
        ・ボタンを一段大きく・影を強めて、地図（額縁の中）の外にある主アクションだと際立たせる。
        ・送信ボタンを発光緑#39ff14＋黒文字に統一（緑帯と同色）。『送信＝この色』の信号を一本化。
+     v2.2.0: スマホで地図が画面幅いっぱい→ページを指で掴めず、地図がスクロールを奪い送信ボタンに届かない件。
+       ・左右余白 14→20px（枠の脇に指の逃げ場）。
+       ・地図とボタンの間に『掴み代』（中立のスクロール帯・最低44px）を確保。地図でもボタンでもないので
+         指を置けばページが動く。ヒント文はこの帯の中に置く。
+       ・iframe(地図)の縦上限を 60vh に制限。初期状態で額縁下端・掴み代・送信ボタンが必ず画面内に入る
+         ＝そもそもスクロール不要でボタンが見える（最後の砦）。残りの縦は掴み代とボタンが占める。
      v2.0.0: 地図を額縁化（周囲余白＋枠線＋角丸）。ボタン下部固定で常時可視。
      ?k=<統合番地> を受け、①地図GAS(exec)を ?k= 付きで iframe 表示 ②Formsプレフィルへ target=_top 遷移。
      名簿は持たない純URL変換器。 -->
@@ -16,7 +22,7 @@
 <title>番地確認</title>
 <style>
   :root{
-    --pad: 14px;
+    --pad: 20px;   /* 左右上の余白。枠の脇に指の逃げ場を作る */
     --frame: #cfcfcf;
     --bg:    #eef1f4;
     --go:    #39ff14;   /* 発光緑：緑帯(#39ff14)と統一し『送信＝この色』の信号を一本化 */
@@ -26,15 +32,19 @@
   body{display:flex;flex-direction:column;height:100vh;height:100dvh;
        font-family:sans-serif;overflow:hidden;background:var(--bg)}
 
-  #frame{flex:1 1 auto;min-height:120px;
-         margin:var(--pad) var(--pad) 8px var(--pad);
+  /* 地図＝額縁の中の一枚の絵。縦を60vhに制限し、下に掴み代とボタンの居場所を必ず残す */
+  #frame{flex:0 0 auto;height:60vh;max-height:60vh;
+         margin:var(--pad) var(--pad) 0 var(--pad);
          border:1px solid var(--frame);border-radius:12px;
          background:#fff;overflow:hidden;position:relative;
          box-shadow:0 1px 4px rgba(0,0,0,.12)}
   #map{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 
-  #hint{flex:0 0 auto;text-align:center;color:#555;font-size:13px;
-        padding:0 var(--pad) 6px var(--pad);line-height:1.3}
+  /* 掴み代＝地図でもボタンでもない中立帯。flex:1で余った縦を全部吸い、必ず指を置ける広さに。
+     ここに指を置けばページ（＝この帯）が動き、地図に奪われない。ヒント文はこの帯の中に表示。 */
+  #hint{flex:1 1 auto;min-height:44px;display:flex;align-items:center;justify-content:center;
+        text-align:center;color:#555;font-size:14px;line-height:1.4;
+        padding:8px var(--pad);touch-action:pan-y}
 
   /* 登録ボタン＝中央・文字幅＋余白。全幅バーにしない（上の緑ヘッダと別種に見せる） */
   #bar{flex:0 0 auto;display:flex;justify-content:center;
