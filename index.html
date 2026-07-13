@@ -5,7 +5,7 @@
          全幅だと上の緑ヘッダ（全幅バー）と同じ形に見え、同種のバーと誤認され押せると気づかれない。
          航空写真ボタン（文字幅の角丸）と同じ語彙にして『押すもの』と直感させる。
        ・ボタンを一段大きく・影を強めて、地図（額縁の中）の外にある主アクションだと際立たせる。
-       ※色（発光緑を下ボタンに一意化）と上ヘッダの弱化は一点表示.gs 側の改修（別途）。
+       ・送信ボタンを発光緑#39ff14＋黒文字に統一（緑帯と同色）。『送信＝この色』の信号を一本化。
      v2.0.0: 地図を額縁化（周囲余白＋枠線＋角丸）。ボタン下部固定で常時可視。
      ?k=<統合番地> を受け、①地図GAS(exec)を ?k= 付きで iframe 表示 ②Formsプレフィルへ target=_top 遷移。
      名簿は持たない純URL変換器。 -->
@@ -19,8 +19,8 @@
     --pad: 14px;
     --frame: #cfcfcf;
     --bg:    #eef1f4;
-    --go:    #1a9e3f;
-    --go2:   #157a31;
+    --go:    #39ff14;   /* 発光緑：緑帯(#39ff14)と統一し『送信＝この色』の信号を一本化 */
+    --go2:   #22c400;   /* 押下時：一段沈めた発光緑 */
   }
   html,body{margin:0;padding:0;height:100%}
   body{display:flex;flex-direction:column;height:100vh;height:100dvh;
@@ -41,9 +41,9 @@
        padding:0 var(--pad) calc(var(--pad) + env(safe-area-inset-bottom, 0px)) var(--pad)}
   #go{display:inline-flex;align-items:center;justify-content:center;gap:10px;
       max-width:100%;box-sizing:border-box;border:0;border-radius:14px;
-      background:var(--go);color:#fff;font:900 23px/1.2 sans-serif;
+      background:var(--go);color:#000;font:900 23px/1.2 sans-serif;
       padding:20px 34px;text-decoration:none;text-align:center;white-space:nowrap;
-      box-shadow:0 4px 10px rgba(0,0,0,.28);cursor:pointer}
+      box-shadow:0 4px 10px rgba(0,0,0,.35);cursor:pointer}
   #go:active{background:var(--go2);box-shadow:0 1px 3px rgba(0,0,0,.28)}
   #go .arw{font-size:19px}
 
