@@ -1,11 +1,12 @@
 <!doctype html>
-<!-- グリーンボタン 中継ページ v2.0.0 (評価期間・使い捨て)
-     v2.0.0 変更（index.html層のみ。iframe内=一点表示.gs は未変更）:
-       ・地図を全面ベタ→「額縁」化（周囲に余白＋枠線＋角丸）。
-         全面地図が『操作する地図アプリ』と誤解させ、下の登録ボタンに気づかせない問題への対処。
-         囲まれた一枚の絵に見せることで『これは最終確認、操作対象ではない』を余白で語る。
-       ・登録ボタンを下部固定・全幅・影付きの明示ボタンに（航空写真ボタンと釣り合う『押せる』見た目）。
-         どの端末でもスクロール不要で常時可視（従来は縦の短い端末で画面外に隠れていた）。
+<!-- グリーンボタン 中継ページ v2.1.0 (評価期間・使い捨て)
+     v2.1.0 変更（index.html層のみ。iframe内=一点表示.gs は未変更）:
+       ・登録ボタンを全幅バー→「文字幅＋少し」の中央ボタンに。
+         全幅だと上の緑ヘッダ（全幅バー）と同じ形に見え、同種のバーと誤認され押せると気づかれない。
+         航空写真ボタン（文字幅の角丸）と同じ語彙にして『押すもの』と直感させる。
+       ・ボタンを一段大きく・影を強めて、地図（額縁の中）の外にある主アクションだと際立たせる。
+       ※色（発光緑を下ボタンに一意化）と上ヘッダの弱化は一点表示.gs 側の改修（別途）。
+     v2.0.0: 地図を額縁化（周囲余白＋枠線＋角丸）。ボタン下部固定で常時可視。
      ?k=<統合番地> を受け、①地図GAS(exec)を ?k= 付きで iframe 表示 ②Formsプレフィルへ target=_top 遷移。
      名簿は持たない純URL変換器。 -->
 <html lang="ja">
@@ -33,17 +34,18 @@
   #map{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 
   #hint{flex:0 0 auto;text-align:center;color:#555;font-size:13px;
-        padding:0 var(--pad) 8px var(--pad);line-height:1.3}
+        padding:0 var(--pad) 6px var(--pad);line-height:1.3}
 
-  #bar{flex:0 0 auto;padding:0 var(--pad)
-       calc(var(--pad) + env(safe-area-inset-bottom, 0px)) var(--pad)}
-  #go{display:flex;align-items:center;justify-content:center;gap:8px;
-      width:100%;box-sizing:border-box;border:0;border-radius:12px;
-      background:var(--go);color:#fff;font:900 21px/1.2 sans-serif;
-      padding:18px 12px;text-decoration:none;text-align:center;
-      box-shadow:0 3px 8px rgba(0,0,0,.22);cursor:pointer}
-  #go:active{background:var(--go2);box-shadow:0 1px 3px rgba(0,0,0,.22)}
-  #go .arw{font-size:18px}
+  /* 登録ボタン＝中央・文字幅＋余白。全幅バーにしない（上の緑ヘッダと別種に見せる） */
+  #bar{flex:0 0 auto;display:flex;justify-content:center;
+       padding:0 var(--pad) calc(var(--pad) + env(safe-area-inset-bottom, 0px)) var(--pad)}
+  #go{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      max-width:100%;box-sizing:border-box;border:0;border-radius:14px;
+      background:var(--go);color:#fff;font:900 23px/1.2 sans-serif;
+      padding:20px 34px;text-decoration:none;text-align:center;white-space:nowrap;
+      box-shadow:0 4px 10px rgba(0,0,0,.28);cursor:pointer}
+  #go:active{background:var(--go2);box-shadow:0 1px 3px rgba(0,0,0,.28)}
+  #go .arw{font-size:19px}
 
   #err{padding:1.5em;font-size:18px;line-height:1.6}
 </style>
