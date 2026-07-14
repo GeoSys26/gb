@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- グリーンボタン 中継ページ v2.3.1 (評価期間・使い捨て)
+<!-- グリーンボタン 中継ページ v2.3.2（額縁の角丸・枠線を撤去。右下地帯で右隅だけ直角になる不自然を解消。額縁効果は周囲余白＋淡い影が担う） (評価期間・使い捨て)
      v2.1.0 変更（index.html層のみ。iframe内=一点表示.gs は未変更）:
        ・登録ボタンを全幅バー→「文字幅＋少し」の中央ボタンに。
          全幅だと上の緑ヘッダ（全幅バー）と同じ形に見え、同種のバーと誤認され押せると気づかれない。
@@ -37,7 +37,6 @@
   /* 額縁：中を横並びにして [地図 | 右の下地帯] を収める。flex:1で残りの縦を取る主役。 */
   #frame{flex:1 1 auto;min-height:180px;display:flex;flex-direction:row;
          margin:var(--pad) var(--pad) 0 var(--pad);
-         border:1px solid var(--frame);border-radius:12px;
          background:#fff;overflow:hidden;position:relative;
          box-shadow:0 1px 4px rgba(0,0,0,.12)}
   #mapwrap{flex:1 1 auto;position:relative;min-width:0}
